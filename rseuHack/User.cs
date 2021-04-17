@@ -9,6 +9,6 @@ namespace rseuHack
         public string userName;
         public Program.MenuItems menuItems = Program.MenuItems.Start;
         public DateTime lastMessage;
-        public string lastFile;
+        public List<string> lastFile = new List<string>();
     }
 }

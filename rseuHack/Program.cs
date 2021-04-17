@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
+using System.IO.Compression;
 
 namespace rseuHack
 {
@@ -21,7 +23,7 @@ namespace rseuHack
             Help,
             Status
         }
-
+        static List<string> files = new List<string>();
         public const long ADMIN_ID = 729098950;
         public static Dictionary<string, MenuItems> menu = new Dictionary<string, MenuItems>();
         public static ITelegramBotClient tgBot;
@@ -34,13 +36,14 @@ namespace rseuHack
         private static FileVM fileVM;
         public static Document document;
         public static QueueController queue = QueueController.GetQueueController();
+        private static string token = System.IO.File.ReadAllText("spt");
         static void Main(string[] args)
         {
             menu.Add("/start", MenuItems.Start);
             menu.Add("/help", MenuItems.Help);
             menu.Add("/status", MenuItems.Status);
 
-            tgBot = new TelegramBotClient("1435986427:AAH7tfPHWBpUQvWFDylWVR1NEswh6zJANbo");
+            tgBot = new TelegramBotClient(token);
             var me = tgBot.GetMeAsync().Result;
             tgBot.OnMessage += OnNewMessage;
             tgBot.StartReceiving();
@@ -51,12 +54,12 @@ namespace rseuHack
             Console.ReadKey();
         }
 
-        public async static void GetFile(long mId)
+        public async static Task GetFile(long mId, string fileid)
         {
-            if (users[mId].lastFile == null)
+            if (string.IsNullOrWhiteSpace(fileid))
                 return;
-            var file = tgBot.GetFileAsync(users[mId].lastFile).Result;
-            var url = "https://api.telegram.org/file/" + "bot" + /*bot_token*/"1435986427:AAH7tfPHWBpUQvWFDylWVR1NEswh6zJANbo" + "/" + file.FilePath;
+            var file = tgBot.GetFileAsync(fileid).Result;
+            var url = "https://api.telegram.org/file/" + "bot" + token + "/" + file.FilePath;
             byte[] data;
             using (var client = new HttpClient())
             using (HttpResponseMessage response = await client.GetAsync(url))
@@ -76,8 +79,10 @@ namespace rseuHack
                 users.Add(mId, new User());
             }
             
-            var type = e.CallbackQuery.Data;
-            queue.Add(mId, type);
+            var type = e.CallbackQuery.Data.Split(":")[0];
+
+            var fileid = files[int.Parse(e.CallbackQuery.Data.Split(":")[1])];
+            queue.Add(mId, type, fileid);
             
         }
 
@@ -90,8 +95,9 @@ namespace rseuHack
             }
             string mes = e?.Message?.Text;
             document = e?.Message?.Document;
+            //queue, and killer ficha
 
-            
+
             if (mes != null)
             {
                 if (!menu.ContainsKey(mes))
@@ -129,20 +135,28 @@ namespace rseuHack
             }
             if (document != null)
             {
-                users[userID].lastFile = document.FileId;
+                users[userID].lastFile.Add(document.FileId);
                 //Console.WriteLine(document.MimeType);
                 //CreateInlineKeyboard(Menu.inlineMenu[0], userID);
-                SendMessage(CreateInlineKeyboard(Menu.inlineMenu, userID), userID, "Выберете нужный тип файла");
+                var buttons = Menu.inlineMenu.ToList().Select(x => {
+                    var tmp = x + ":" + files.Count;
+                    files.Add(e.Message.Document.FileId);
+                    return tmp;
+                    }).ToArray();
+                Console.WriteLine(buttons[0].Length);
+                SendMessage(CreateInlineKeyboard(Menu.inlineMenu, buttons, userID), userID, "Выберете нужный тип файла " + e.Message.Document.FileName);
                
             }      
         }
+
+
         public static void SendMessage(InlineKeyboardMarkup keyboardMarkup,long? userId,string text)
         {
             tgBot.SendTextMessageAsync(
                 replyMarkup:keyboardMarkup,
                 chatId: userId,
                 text:text
-                ) ;
+                ).ConfigureAwait(false);
         }
         public static void SendMessage(long? userId, string text)
         {
@@ -171,14 +185,14 @@ namespace rseuHack
             ).ConfigureAwait(false);
         }
         
-        private static InlineKeyboardMarkup CreateInlineKeyboard(string []keyboard, long? userId)
+        private static InlineKeyboardMarkup CreateInlineKeyboard(string []keyboard, string[] callback, long? userId)
         {
             //InlineKeyboardMarkup key = new InlineKeyboardMarkup();
             InlineKeyboardMarkup key = null;
             InlineKeyboardButton[] keyboardButtons = new InlineKeyboardButton[keyboard.Length];
             for (int i = 0; i < keyboard.Length; i++)
             {
-                keyboardButtons[i] = new InlineKeyboardButton { Text = keyboard[i], CallbackData = keyboard[i] };
+                keyboardButtons[i] = new InlineKeyboardButton { Text = keyboard[i], CallbackData =  callback[i] };
             }
                 key = new InlineKeyboardMarkup(keyboardButtons);                            
            

@@ -28,8 +28,8 @@ namespace rseuHack
 
         static List<QueueElement> queue = new List<QueueElement>();
 
-        public void Add(long userId, string type) {
-            queue.Add(new QueueElement() { userId = userId, fileType = type });
+        public void Add(long userId, string type, string fileid) {
+            queue.Add(new QueueElement() { userId = userId, fileType = type, fileid = fileid });
         }
 
         private async void Proceed()
@@ -39,7 +39,7 @@ namespace rseuHack
                 if (queue.Count>0 && queue.First() != null)
                 {
                     var cur = queue.First();
-                    Program.GetFile(cur.userId);
+                    await Program.GetFile(cur.userId, cur.fileid);
                     switch (cur.fileType)
                     {
                         case "PDF":
@@ -68,5 +68,6 @@ namespace rseuHack
     {
         public long userId;
         public string fileType;
+        public string fileid;
     }
 }
