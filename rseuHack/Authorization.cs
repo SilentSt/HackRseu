@@ -63,7 +63,7 @@ namespace rseuHack
 
             TemplateCreateVM templateCreateVM = new TemplateCreateVM()
             {
-                Name = "box.frx",
+                Name = filepath,
                 Content = Convert.ToBase64String(File.ReadAllBytes(filepath))
             };
 

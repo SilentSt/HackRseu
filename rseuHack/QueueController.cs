@@ -47,7 +47,7 @@ namespace rseuHack
             }
         }
 
-        public static int[] GetQueues(long userId)
+        public int[] GetQueues(long userId)
         {
             var all = queue.FindAll(x => x.userId == userId);
             int[] res = new int[all.Count];

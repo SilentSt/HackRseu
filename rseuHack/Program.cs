@@ -36,13 +36,13 @@ namespace rseuHack
         private static FileVM fileVM;
         public static Document document;
         public static QueueController queue = QueueController.GetQueueController();
+        
         private static string token = System.IO.File.ReadAllText("spt");
         static void Main(string[] args)
         {
             menu.Add("/start", MenuItems.Start);
             menu.Add("/help", MenuItems.Help);
-            menu.Add("/status", MenuItems.Status);
-
+            menu.Add("/status", MenuItems.Status);            
             tgBot = new TelegramBotClient(token);
             var me = tgBot.GetMeAsync().Result;
             tgBot.OnMessage += OnNewMessage;
@@ -121,19 +121,39 @@ namespace rseuHack
                 switch (users[userID].menuItems)
                 {
                     case MenuItems.Start:
-                        SendMessage(Menu.menuButtons, userID, "Описание будет готово позже, в кратце обработка файлов rfx и fpx в pdf и другое", false);
+                        SendMessage(Menu.menuButtons, userID,
+                            "Данный бот принимает файлы FRX и FPX форматов, затем преобразует их в один из возможных форматов через сервис Fast Report"+
+                            " и отправляет пользователю.\n"+
+                             "Бот разработан командой Silent, под руководсвом 'fast report ' https://fastreport.cloud/ru/", false);
                         break;
                     case MenuItems.Help:
-                        SendMessage(Menu.menuButtons, userID, "скидываете файл, вам будет предложенно выбор в какое разрешение этот файл конвентирован и далее прислан готовый файл." +
-                            "Все доступные команды: /help,/start,/status. " +
-                            "Бот разработан командой Silent, под руководсвом 'fast report ' https://fastreport.cloud/ru/", false);
+                        SendMessage(Menu.menuButtons, userID, "Вам нужно просто отправить один или несколько файлов боту, "+
+                             "затем для каждого из файлов вам будет предложено выбрать формат, который нужен вам." +
+                             "Для каждого недавнего файла в истории сообщений с ботом вы можете преобразовывать файл неограниченное число раз, "+
+                            "а также в несколько форматов."+
+                            "Все доступные команды:\n" +
+                            "/help - расскажет о том, как пользоваться ботом\n" +
+                            "/start - краткая информация о боте\n" +
+                            "/status - позволяет получить информацию о месте ваших файло в очереди "
+                            , false);
                         break;
                     case MenuItems.Status:
-                        SendMessage(Menu.menuButtons, userID, "чет делается", false);
+                        var que = queue.GetQueues(userID);
+                        if (que==null||que.Length==0)
+                        {
+                            SendMessage(Menu.menuButtons, userID, "Ваших файлов нет в очереди", false);
+                            return;
+                        }
+                        string str = "Ваши файлы в очереди под номерами:";
+                        for (int i = 0; i < que.Length; i++)
+                        {
+                            str += "\n\t"+que[i];
+                        }
+                        SendMessage(Menu.menuButtons, userID, str, false);
                         break;
                 }
             }
-            if (document != null)
+            if (document != null&&document.MimeType == "application/xml")
             {
                 users[userID].lastFile.Add(document.FileId);
                 //Console.WriteLine(document.MimeType);
