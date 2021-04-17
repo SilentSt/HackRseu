@@ -192,7 +192,7 @@ namespace rseuHack
             InlineKeyboardButton[][] keyboardButtons = new InlineKeyboardButton[keyboard.Length/4][];            
             for (int i = 0; i < keyboard.Length;)
             {
-                keyboardButtons[i] = new InlineKeyboardButton[4];
+                keyboardButtons[i/4] = new InlineKeyboardButton[4];
                 for (int j = 0; j < 4; j++)
                 {
                     keyboardButtons[i/4][j] = new InlineKeyboardButton { Text = keyboard[i], CallbackData = callback[i] };

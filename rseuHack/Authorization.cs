@@ -71,9 +71,9 @@ namespace rseuHack
 
             ExportTemplateTaskVM export = new ExportTemplateTaskVM()
             {
-                FileName = "box."+fileType,
+                FileName = "box."+fType,
                 FolderId = exportFolder,
-                Format = formats[fileType]
+                Format = formats[fType]
             };
             ExportVM exportedFile = await rpClientTemplates.ExportAsync(uploadedFile.Id, export) as ExportVM;
             string fileId = exportedFile.Id;
@@ -89,13 +89,13 @@ namespace rseuHack
 
             using (var file = await downloadClient.GetExportAsync(fileId))
             {
-                using (var pdf = File.Open("report."+fileType, FileMode.Create))
+                using (var pdf = File.Open("report."+fType, FileMode.Create))
                 {
                     file.Stream.CopyTo(pdf);
                 }
-                using (var stream = File.Open("report." + fileType, FileMode.Open))
+                using (var stream = File.Open("report." + fType, FileMode.Open))
                 {
-                    await Program.tgBot.SendDocumentAsync(userId, new InputOnlineFile(stream, "report." + fileType));
+                    await Program.tgBot.SendDocumentAsync(userId, new InputOnlineFile(stream, "report." + fType));
                 }
             }
         }
