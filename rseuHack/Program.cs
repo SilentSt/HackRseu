@@ -189,12 +189,17 @@ namespace rseuHack
         {
             //InlineKeyboardMarkup key = new InlineKeyboardMarkup();
             InlineKeyboardMarkup key = null;
-            InlineKeyboardButton[] keyboardButtons = new InlineKeyboardButton[keyboard.Length];
-            for (int i = 0; i < keyboard.Length; i++)
+            InlineKeyboardButton[][] keyboardButtons = new InlineKeyboardButton[keyboard.Length/4][];            
+            for (int i = 0; i < keyboard.Length;)
             {
-                keyboardButtons[i] = new InlineKeyboardButton { Text = keyboard[i], CallbackData =  callback[i] };
-            }
-                key = new InlineKeyboardMarkup(keyboardButtons);                            
+                keyboardButtons[i] = new InlineKeyboardButton[4];
+                for (int j = 0; j < 4; j++)
+                {
+                    keyboardButtons[i/4][j] = new InlineKeyboardButton { Text = keyboard[i], CallbackData = callback[i] };
+                    i++;
+                }                
+            }            
+            key = new InlineKeyboardMarkup(keyboardButtons);                            
            
             return key;
         }

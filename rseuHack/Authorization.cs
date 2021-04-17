@@ -22,19 +22,38 @@ namespace rseuHack
         private static HttpClient client = new HttpClient();
         static SubscriptionVM subscription;
         static HttpClient httpClient;
+
+        public static Dictionary<string, ExportTemplateTaskVMFormat> formats = new Dictionary<string, ExportTemplateTaskVMFormat>();
+
         public static Authorization GetAuthorization()
         {
             if (auth == null)
             {
                 auth = new Authorization();
-                auth.GetSubscription();
+                formats.Add("pdf", ExportTemplateTaskVMFormat.Pdf);
+                formats.Add("rtf", ExportTemplateTaskVMFormat.Richtext);
+                formats.Add("docx", ExportTemplateTaskVMFormat.Docx);
+                formats.Add("svg", ExportTemplateTaskVMFormat.Svg);
+                formats.Add("csv", ExportTemplateTaskVMFormat.Csv);
+                formats.Add("ps", ExportTemplateTaskVMFormat.PS);
+                formats.Add("pptx", ExportTemplateTaskVMFormat.Pptx);
+                formats.Add("json", ExportTemplateTaskVMFormat.Json);
+                formats.Add("dbf", ExportTemplateTaskVMFormat.Dbf);
+                formats.Add("html", ExportTemplateTaskVMFormat.Html);
+                formats.Add("img", ExportTemplateTaskVMFormat.Image);
+                formats.Add("ods", ExportTemplateTaskVMFormat.Ods);
+                formats.Add("odt", ExportTemplateTaskVMFormat.Odt);
+                formats.Add("zpl", ExportTemplateTaskVMFormat.Zpl);
+                formats.Add("xaml", ExportTemplateTaskVMFormat.Xaml);
+                formats.Add("xml", ExportTemplateTaskVMFormat.Xml);
+                auth.GetSubscription();  
             }
             return auth;
         }
 
-        public async Task PDF(string filepath, long? userId)
+        public async Task Magic(string filepath,string fileType, long? userId)
         {
-            
+            var fType = fileType.ToLower();
             var rpClientTemplates = new TemplatesClient(httpClient);
             var rpClientExports = new ExportsClient(httpClient);
             var downloadClient = new DownloadClient(httpClient);
@@ -52,9 +71,9 @@ namespace rseuHack
 
             ExportTemplateTaskVM export = new ExportTemplateTaskVM()
             {
-                FileName = "box.pdf",
+                FileName = "box."+fileType,
                 FolderId = exportFolder,
-                Format = ExportTemplateTaskVMFormat.Pdf
+                Format = formats[fileType]
             };
             ExportVM exportedFile = await rpClientTemplates.ExportAsync(uploadedFile.Id, export) as ExportVM;
             string fileId = exportedFile.Id;
@@ -68,22 +87,17 @@ namespace rseuHack
                 attempts--;
             }
 
-
             using (var file = await downloadClient.GetExportAsync(fileId))
             {
-                using (var pdf = File.Open("report.pdf", FileMode.Create))
+                using (var pdf = File.Open("report."+fileType, FileMode.Create))
                 {
                     file.Stream.CopyTo(pdf);
                 }
-                using (var stream = File.Open("report.pdf", FileMode.Open))
+                using (var stream = File.Open("report." + fileType, FileMode.Open))
                 {
-                    await Program.tgBot.SendDocumentAsync(userId, new InputOnlineFile(stream, "report.pdf"));
+                    await Program.tgBot.SendDocumentAsync(userId, new InputOnlineFile(stream, "report." + fileType));
                 }
             }
-            //await Program.tgBot.SendDocumentAsync(userId, name);
-
-
-
         }
 
         public async void GetSubscription()
@@ -95,168 +109,6 @@ namespace rseuHack
             httpClient.DefaultRequestHeaders.Authorization = new FastReportCloudApiKeyHeader(str);
             var subscriptions = new SubscriptionsClient(httpClient);
             subscription = (await subscriptions.GetSubscriptionsAsync(0, 2)).Subscriptions.First();
-        }
-
-
-        public async Task RTF(string filepath, long? userId)
-        {
-
-            var rpClientTemplates = new TemplatesClient(httpClient);
-            var rpClientExports = new ExportsClient(httpClient);
-            var downloadClient = new DownloadClient(httpClient);
-
-
-            var templateFolder = subscription.TemplatesFolder.FolderId;
-            var exportFolder = subscription.ExportsFolder.FolderId;
-
-            TemplateCreateVM templateCreateVM = new TemplateCreateVM()
-            {
-                Name = "box.frx",
-                Content = Convert.ToBase64String(File.ReadAllBytes(filepath))
-            };
-
-            TemplateVM uploadedFile = await rpClientTemplates.UploadFileAsync(templateFolder, templateCreateVM);
-
-            ExportTemplateTaskVM export = new ExportTemplateTaskVM()
-            {
-                FileName = "box.rtf",
-                FolderId = exportFolder,
-                Format = ExportTemplateTaskVMFormat.Richtext
-            };
-            ExportVM exportedFile = await rpClientTemplates.ExportAsync(uploadedFile.Id, export) as ExportVM;
-            string fileId = exportedFile.Id;
-            int attempts = 3;
-
-            exportedFile = rpClientExports.GetFile(fileId);
-            while (exportedFile.Status != ExportVMStatus.Success && attempts >= 0)
-            {
-                await Task.Delay(1000);
-                exportedFile = rpClientExports.GetFile(fileId);
-                attempts--;
-            }
-
-
-            using (var file = await downloadClient.GetExportAsync(fileId))
-            {
-                using (var pdf = File.Open("report.rtf", FileMode.Create))
-                {
-                    file.Stream.CopyTo(pdf);
-                }
-                using (var stream = File.Open("report.rtf", FileMode.Open))
-                {
-                    await Program.tgBot.SendDocumentAsync(userId, new InputOnlineFile(stream, "report.rtf"));
-                }
-            }
-            //await Program.tgBot.SendDocumentAsync(userId, name);
-
-
-
-        }
-        public async Task DOCX(string filepath, long? userId)
-        {
-
-            var rpClientTemplates = new TemplatesClient(httpClient);
-            var rpClientExports = new ExportsClient(httpClient);
-            var downloadClient = new DownloadClient(httpClient);
-
-
-            var templateFolder = subscription.TemplatesFolder.FolderId;
-            var exportFolder = subscription.ExportsFolder.FolderId;
-
-            TemplateCreateVM templateCreateVM = new TemplateCreateVM()
-            {
-                Name = "box.frx",
-                Content = Convert.ToBase64String(File.ReadAllBytes(filepath))
-            };
-
-            TemplateVM uploadedFile = await rpClientTemplates.UploadFileAsync(templateFolder, templateCreateVM);
-
-            ExportTemplateTaskVM export = new ExportTemplateTaskVM()
-            {
-                FileName = "box.docx",
-                FolderId = exportFolder,
-                Format = ExportTemplateTaskVMFormat.Docx
-            };
-            ExportVM exportedFile = await rpClientTemplates.ExportAsync(uploadedFile.Id, export) as ExportVM;
-            string fileId = exportedFile.Id;
-            int attempts = 3;
-
-            exportedFile = rpClientExports.GetFile(fileId);
-            while (exportedFile.Status != ExportVMStatus.Success && attempts >= 0)
-            {
-                await Task.Delay(1000);
-                exportedFile = rpClientExports.GetFile(fileId);
-                attempts--;
-            }
-
-
-            using (var file = await downloadClient.GetExportAsync(fileId))
-            {
-                using (var pdf = File.Open("report.docx", FileMode.Create))
-                {
-                    file.Stream.CopyTo(pdf);
-                }
-                using (var stream = File.Open("report.docx", FileMode.Open))
-                {
-                    await Program.tgBot.SendDocumentAsync(userId, new InputOnlineFile(stream, "report.docx"));
-                }
-            }
-            //await Program.tgBot.SendDocumentAsync(userId, name);
-
-
-
-        }
-        public async Task SVG(string filepath, long? userId)
-        {
-            var rpClientTemplates = new TemplatesClient(httpClient);
-            var rpClientExports = new ExportsClient(httpClient);
-            var downloadClient = new DownloadClient(httpClient);
-
-            var templateFolder = subscription.TemplatesFolder.FolderId;
-            var exportFolder = subscription.ExportsFolder.FolderId;
-
-            TemplateCreateVM templateCreateVM = new TemplateCreateVM()
-            {
-                Name = "box.frx",
-                Content = Convert.ToBase64String(File.ReadAllBytes(filepath))
-            };
-
-            TemplateVM uploadedFile = await rpClientTemplates.UploadFileAsync(templateFolder, templateCreateVM);
-
-            ExportTemplateTaskVM export = new ExportTemplateTaskVM()
-            {
-                FileName = "box.svg",
-                FolderId = exportFolder,
-                Format = ExportTemplateTaskVMFormat.Svg
-            };
-            ExportVM exportedFile = await rpClientTemplates.ExportAsync(uploadedFile.Id, export) as ExportVM;
-            string fileId = exportedFile.Id;
-            int attempts = 3;
-
-            exportedFile = rpClientExports.GetFile(fileId);
-            while (exportedFile.Status != ExportVMStatus.Success && attempts >= 0)
-            {
-                await Task.Delay(1000);
-                exportedFile = rpClientExports.GetFile(fileId);
-                attempts--;
-            }
-
-
-            using (var file = await downloadClient.GetExportAsync(fileId))
-            {
-                using (var pdf = File.Open("report.svg", FileMode.Create))
-                {
-                    file.Stream.CopyTo(pdf);
-                }
-                using (var stream = File.Open("report.svg", FileMode.Open))
-                {
-                    await Program.tgBot.SendDocumentAsync(userId, new InputOnlineFile(stream, "report.svg"));
-                }
-            }
-            //await Program.tgBot.SendDocumentAsync(userId, name);
-
-
-
-        }
+        }        
     }
 }

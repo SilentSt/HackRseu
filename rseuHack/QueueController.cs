@@ -40,21 +40,7 @@ namespace rseuHack
                 {
                     var cur = queue.First();
                     await Program.GetFile(cur.userId, cur.fileid);
-                    switch (cur.fileType)
-                    {
-                        case "PDF":
-                            await auth.PDF(Program.document.FileName, cur.userId);
-                            break;
-                        case "RTF":
-                            await auth.RTF(Program.document.FileName, cur.userId);
-                            break;
-                        case "DOCX":
-                            await auth.DOCX(Program.document.FileName, cur.userId);
-                            break;
-                        case "SVG":
-                            await auth.SVG(Program.document.FileName, cur.userId);
-                            break;
-                    }
+                    await auth.Magic(Program.document.FileName,cur.fileType ,cur.userId);
                     queue.Remove(cur);
                 }
                 Thread.Sleep(20);
