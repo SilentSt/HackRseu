@@ -36,7 +36,7 @@
 УСТАНОВКА
 
     Установка .NET 5.0
-    Download .NET 5.0 (Linux, macOS, and Windows) (microsoft.com)
+    https://dotnet.microsoft.com/download/dotnet/5.0
 
 РАЗРАБОТЧИКИ
 
