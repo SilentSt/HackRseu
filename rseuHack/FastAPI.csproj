@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FastReport.Cloud.SDK" Version="2021.1.12" />
+    <PackageReference Include="FastReport.Cloud.SDK.Web" Version="2021.1.12" />
+  </ItemGroup>
+
+</Project>
