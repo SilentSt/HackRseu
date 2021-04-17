@@ -46,6 +46,18 @@ namespace rseuHack
                 Thread.Sleep(20);
             }
         }
+
+        public static int[] GetQueues(long userId)
+        {
+            var all = queue.FindAll(x => x.userId == userId);
+            int[] res = new int[all.Count];
+            for(int i = 0; i < all.Count; i++)
+            {
+                res[i] = queue.IndexOf(all[i]);
+            }
+            return res;
+        }
+
     }
 
     
