@@ -40,10 +40,10 @@ namespace rseuHack
                 {
                     var cur = queue.First();
                     await Program.GetFile(cur.userId, cur.fileid);
-                    await auth.Magic(Program.document.FileName,cur.fileType ,cur.userId);
+                    await auth.Magic(Program.filename,cur.fileType ,cur.userId);
                     queue.Remove(cur);
                 }
-                Thread.Sleep(20);
+                Thread.Sleep(2000);
             }
         }
 

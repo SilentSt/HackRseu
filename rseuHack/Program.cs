@@ -12,6 +12,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 using System.IO.Compression;
+using Newtonsoft.Json.Linq;
 
 namespace rseuHack
 {
@@ -35,6 +36,7 @@ namespace rseuHack
         private static Authorization auth;
         private static FileVM fileVM;
         public static Document document;
+        public static string filename;
         public static QueueController queue = QueueController.GetQueueController();
         
         private static string token = System.IO.File.ReadAllText("spt");
@@ -42,7 +44,12 @@ namespace rseuHack
         {
             menu.Add("/start", MenuItems.Start);
             menu.Add("/help", MenuItems.Help);
-            menu.Add("/status", MenuItems.Status);            
+            menu.Add("/status", MenuItems.Status);
+            if (System.IO.File.Exists("fls"))
+            {
+                var lst = System.IO.File.ReadAllText("fls");
+                files = JObject.Parse(lst)["files"].ToObject<List<string>>();
+            }
             tgBot = new TelegramBotClient(token);
             var me = tgBot.GetMeAsync().Result;
             tgBot.OnMessage += OnNewMessage;
@@ -59,6 +66,7 @@ namespace rseuHack
             if (string.IsNullOrWhiteSpace(fileid))
                 return;
             var file = tgBot.GetFileAsync(fileid).Result;
+            filename = "file." + file.FilePath.Split(".").Last();
             var url = "https://api.telegram.org/file/" + "bot" + token + "/" + file.FilePath;
             byte[] data;
             using (var client = new HttpClient())
@@ -66,7 +74,7 @@ namespace rseuHack
             using (HttpContent content = response.Content)
             {
                 data = await content.ReadAsByteArrayAsync();
-                using (FileStream f = System.IO.File.Create(document.FileName)) ////path = "wwwroot\\XML\\1.zip"
+                using (FileStream f = System.IO.File.Create(filename)) ////path = "wwwroot\\XML\\1.zip"
                     f.Write(data, 0, data.Length);
             }
         }
@@ -130,7 +138,7 @@ namespace rseuHack
                         SendMessage(Menu.menuButtons, userID, "Вам нужно просто отправить один или несколько файлов боту, "+
                              "затем для каждого из файлов вам будет предложено выбрать формат, который нужен вам." +
                              "Для каждого недавнего файла в истории сообщений с ботом вы можете преобразовывать файл неограниченное число раз, "+
-                            "а также в несколько форматов."+
+                            "а также в несколько форматов.\n"+
                             "Все доступные команды:\n" +
                             "/help - расскажет о том, как пользоваться ботом\n" +
                             "/start - краткая информация о боте\n" +
@@ -160,9 +168,17 @@ namespace rseuHack
                 //CreateInlineKeyboard(Menu.inlineMenu[0], userID);
                 var buttons = Menu.inlineMenu.ToList().Select(x => {
                     var tmp = x + ":" + files.Count;
-                    files.Add(e.Message.Document.FileId);
                     return tmp;
                     }).ToArray();
+                files.Add(e.Message.Document.FileId);
+                JObject lst = new JObject();
+                lst["files"] = JToken.FromObject(files);
+                string flst = lst.ToString();
+                if (System.IO.File.Exists("fls"))
+                {
+                    System.IO.File.Delete("fls");
+                }
+                System.IO.File.WriteAllText("fls", flst);
                 Console.WriteLine(buttons[0].Length);
                 SendMessage(CreateInlineKeyboard(Menu.inlineMenu, buttons, userID), userID, "Выберете нужный тип файла " + e.Message.Document.FileName);
                
