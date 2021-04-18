@@ -110,7 +110,7 @@ namespace rseuHack
             {
                 if (!menu.ContainsKey(mes))
                 {
-                    SendMessage(Menu.menuButtons, userID, "такой команды не существует", false);
+                    SendMessage(Menu.menuButtons, userID, "такой команды не существует", true);
                     return;
                 }
                 
@@ -149,7 +149,7 @@ namespace rseuHack
                         var que = queue.GetQueues(userID);
                         if (que==null||que.Length==0)
                         {
-                            SendMessage(Menu.menuButtons, userID, "Ваших файлов нет в очереди", false);
+                            SendMessage(Menu.menuButtons, userID, "Ваших файлов нет в очереди", true);
                             return;
                         }
                         string str = "Ваши файлы в очереди под номерами:";
@@ -157,7 +157,7 @@ namespace rseuHack
                         {
                             str += "\n\t"+que[i];
                         }
-                        SendMessage(Menu.menuButtons, userID, str, false);
+                        SendMessage(Menu.menuButtons, userID, str, true);
                         break;
                 }
             }
