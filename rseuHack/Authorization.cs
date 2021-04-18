@@ -63,7 +63,7 @@ namespace rseuHack
 
             TemplateCreateVM templateCreateVM = new TemplateCreateVM()
             {
-                Name = filepath,
+                Name = filepath.Split('.')[0],
                 Content = Convert.ToBase64String(File.ReadAllBytes(filepath))
             };
 
@@ -71,7 +71,7 @@ namespace rseuHack
 
             ExportTemplateTaskVM export = new ExportTemplateTaskVM()
             {
-                FileName = "box."+fType,
+                FileName = filepath.Split('.')[0] + "." + fType,
                 FolderId = exportFolder,
                 Format = formats[fType]
             };
@@ -89,13 +89,13 @@ namespace rseuHack
 
             using (var file = await downloadClient.GetExportAsync(fileId))
             {
-                using (var pdf = File.Open("report."+fType, FileMode.Create))
+                using (var pdf = File.Open(filepath.Split('.')[0] + "." + fType, FileMode.Create))
                 {
                     file.Stream.CopyTo(pdf);
                 }
-                using (var stream = File.Open("report." + fType, FileMode.Open))
+                using (var stream = File.Open(filepath.Split('.')[0] + "." + fType, FileMode.Open))
                 {
-                    await Program.tgBot.SendDocumentAsync(userId, new InputOnlineFile(stream, "report." + fType));
+                    await Program.tgBot.SendDocumentAsync(userId, new InputOnlineFile(stream, filepath.Split('.')[0] + "." + fType));
                 }
             }
         }

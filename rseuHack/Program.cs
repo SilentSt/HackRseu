@@ -155,7 +155,7 @@ namespace rseuHack
                         string str = "Ваши файлы в очереди под номерами:";
                         for (int i = 0; i < que.Length; i++)
                         {
-                            str += "\n\t"+que[i];
+                            str += "\n\t"+(que[i]+1);
                         }
                         SendMessage(Menu.menuButtons, userID, str, true);
                         break;
@@ -179,7 +179,7 @@ namespace rseuHack
                     System.IO.File.Delete("fls");
                 }
                 System.IO.File.WriteAllText("fls", flst);
-                Console.WriteLine(buttons[0].Length);
+                //Console.WriteLine(buttons[0].Length);
                 SendMessage(CreateInlineKeyboard(Menu.inlineMenu, buttons, userID), userID, "Выберете нужный тип файла " + e.Message.Document.FileName);
                
             }      
